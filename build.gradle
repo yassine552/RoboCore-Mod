@@ -1,0 +1,84 @@
+plugins {
+    id 'fabric-loom' version '1.7-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+    mavenCentral()
+    maven { url = "https://maven.fabricmc.net/" }
+}
+
+dependencies {
+    // Fabric
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // JSON processing
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 17
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+
+    // Include Rust native library if available
+    from("${projectDir}/rust-core/target/release/") {
+        include "*.so", "*.dll", "*.dylib"
+        into "natives/"
+    }
+}
+
+// Task to build the Rust native library
+task buildRust(type: Exec) {
+    description = 'Build the RoboCore Rust native library'
+    workingDir = file("${projectDir}/rust-core")
+    commandLine 'cargo', 'build', '--release'
+
+    // Only run if Rust source files have changed
+    inputs.dir("${projectDir}/rust-core/src")
+    inputs.file("${projectDir}/rust-core/Cargo.toml")
+    outputs.dir("${projectDir}/rust-core/target/release")
+}
+
+// Build Rust before jar
+jar.dependsOn buildRust
+
+// Task to run Rust tests
+task testRust(type: Exec) {
+    description = 'Run RoboCore Rust tests'
+    workingDir = file("${projectDir}/rust-core")
+    commandLine 'cargo', 'test'
+}
+
+// Task to clean Rust build artifacts
+task cleanRust(type: Exec) {
+    description = 'Clean Rust build artifacts'
+    workingDir = file("${projectDir}/rust-core")
+    commandLine 'cargo', 'clean'
+}
+
+clean.dependsOn cleanRust

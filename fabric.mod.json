@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "robocore",
+  "version": "${version}",
+  "name": "RoboCore",
+  "description": "A hybrid Java + Rust performance mod for Minecraft. Provides terrain generation acceleration, smart compression, performance AI, and network optimization.",
+  "authors": [
+    "RoboCore Team"
+  ],
+  "contact": {
+    "homepage": "https://github.com/robocore-mod",
+    "sources": "https://github.com/robocore-mod/RoboCore"
+  },
+  "license": "MIT",
+  "icon": "assets/robocore/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.robocore.RoboCoreMod"
+    ],
+    "server": [
+      "com.robocore.RoboCoreMod"
+    ]
+  },
+  "mixins": [
+    "robocore.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  },
+  "suggests": {},
+  "custom": {
+    "robocore": {
+      "rust_engine_version": "1.0.0",
+      "features": [
+        "rust_chunk_generation",
+        "performance_ai",
+        "smart_compression",
+        "network_optimization"
+      ]
+    }
+  }
+}
